@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,7 +22,20 @@ export class UserService {
     };
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findByEmail(email: string) {
+    const emailExisting = this.prisma.user.findFirst({
+      where: { email },
+    });
+
+    if (!emailExisting) {
+      throw new NotFoundException('Email not found');
+    }
+    return this.prisma.user.findFirst({
+      select: {
+        email: true,
+        name: true,
+      },
+      where: { email },
+    });
   }
 }
